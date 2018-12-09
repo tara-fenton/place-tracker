@@ -9,7 +9,7 @@ const sequelize = new Sequelize({
   }
 });
 
-const Places = sequelize.define('places', {
+const Place = sequelize.define('places', {
   name: Sequelize.STRING,
   description: Sequelize.STRING,
   visited: Sequelize.BOOLEAN,
@@ -18,5 +18,5 @@ const Places = sequelize.define('places', {
 
 module.exports = {
   sequelize,
-  Places
+  Place
 }
