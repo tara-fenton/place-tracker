@@ -39,6 +39,18 @@ app.get('/places/:id', async (req, res) => {
   }
 });
 
+app.delete('/places/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const place = await Place.findByPk(id);
+    if (place) await place.destroy();
+    res.json({ message: `Student with id ${id} deleted`});
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: e.message});
+  }
+});
+
 app.post('/places', async (req, res) => {
   try {
     //post
