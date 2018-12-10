@@ -53,7 +53,8 @@ app.delete('/places/:id', async (req, res) => {
 
 app.post('/places', async (req, res) => {
   try {
-    //post
+    const place = await Place.create(req.body);
+    res.json(place);
   } catch (e) {
     console.error(e);
     res.status(500).json({ message: e.message});

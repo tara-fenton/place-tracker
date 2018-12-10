@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import PlacesList from './components/PlacesList';
+import PlacesForm from './components/PlacesForm';
 
 import './App.css';
 
@@ -11,10 +12,57 @@ class App extends Component {
     super(props);
 
     this.state = {
-      places: []
+      places: [],
+      formData: {
+        name: '',
+        description: '',
+        visited: true,
+        address: ''
+      }
     };
 
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
     this.onDelete = this.onDelete.bind(this);
+  }
+
+  handleChange(ev) {
+    const { name, value } = ev.target;
+
+    this.setState(prevState => ({
+      formData: {
+        ...prevState.formData,
+        [name]: value
+      }
+    }));
+  }
+
+  async savePlace(place) {
+    try {
+      const resp = await axios.post(`${BASE_URL}/places`, place);
+      this.setState(prevState => ({
+        places: [
+          ...prevState.places,
+          resp.data
+        ]
+      }));
+    } catch(e) {
+      console.log(e);
+    } finally {
+      this.setState({
+        formData: {
+          name: '',
+          description: '',
+          visited: true,
+          address: ''
+        }
+      });
+    }
+  }
+
+  handleSubmit(ev) {
+    ev.preventDefault();
+    this.savePlace(this.state.formData);
   }
 
   async onDelete(id) {
@@ -40,12 +88,20 @@ class App extends Component {
   }
 
   render() {
+    const { name, description, visited, address } = this.state.formData;
     return (
       <div className="App">
         <main>
           <PlacesList
             onDelete={this.onDelete}
             places={this.state.places} />
+          <PlacesForm
+            name={name}
+            description={description}
+            visited={visited}
+            address={address}
+            onChange={this.handleChange}
+            onSubmit={this.handleSubmit} />
 
         </main>
       </div>
