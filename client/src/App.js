@@ -13,6 +13,7 @@ class App extends Component {
     super(props);
 
     this.state = {
+      view: 'signup',
       places: [],
       formData: {
         name: "",
@@ -141,14 +142,30 @@ class App extends Component {
     await this.fetchPlaces();
   }
 
-  render() {
+  setView(view) {
+    this.setState({
+      view: view
+    });
+  }
+  getView() {
     const { name, description, visited, address } = this.state.formData;
     const { username, password } = this.state.userData;
-    return (
-      <div className="App">
-        <main>
-          <PlacesList onDelete={this.onDelete} places={this.state.places} />
+    switch (this.state.view) {
+      case 'login':
+      case 'signup':
+        return (
+          <UserForm
+            setView={this.setView}
+            username={username}
+            password={password}
+            onChange={this.handleUserChange}
+            onSubmit={this.handleUserSubmit}
+          />
+        );
+      case 'addPlaces':
+        return (
           <PlacesForm
+            setView={this.setView}
             name={name}
             description={description}
             visited={visited}
@@ -157,14 +174,25 @@ class App extends Component {
             onChange={this.handlePlacesChange}
             onSubmit={this.handlePlacesSubmit}
           />
-          <UserForm
-            username={username}
-            password={password}
-            onChange={this.handleUserChange}
-            onSubmit={this.handleUserSubmit}
+        )
+      case 'places':
+        return (
+          <PlacesList
+            setView={this.setView}
+            onDelete={this.onDelete}
+            places={this.state.places}
           />
-        </main>
-      </div>
+        );
+      default:
+    }
+  }
+  render() {
+    return (
+      <main>
+        <div className="App">
+          {this.getView()}
+          </div>
+      </main>
     );
   }
 }
