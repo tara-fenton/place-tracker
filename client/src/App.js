@@ -1,11 +1,12 @@
-import React, { Component } from 'react';
-import axios from 'axios';
-import PlacesList from './components/PlacesList';
-import PlacesForm from './components/PlacesForm';
+import React, { Component } from "react";
+import axios from "axios";
+import PlacesList from "./components/PlacesList";
+import PlacesForm from "./components/PlacesForm";
+import UserForm from "./components/UserForm";
 
-import './App.css';
+import "./App.css";
 
-const BASE_URL = 'http://localhost:3001';
+const BASE_URL = "http://localhost:3001";
 
 class App extends Component {
   constructor(props) {
@@ -14,21 +15,47 @@ class App extends Component {
     this.state = {
       places: [],
       formData: {
-        name: '',
-        description: '',
+        name: "",
+        description: "",
         visited: true,
-        address: ''
+        address: ""
+      },
+      users: [],
+      userData: {
+        username: "",
+        password: ""
       }
     };
 
-    this.handleChange = this.handleChange.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handlePlacesChange = this.handlePlacesChange.bind(this);
+    this.handlePlacesSubmit = this.handlePlacesSubmit.bind(this);
+    this.handleUserChange = this.handleUserChange.bind(this);
+    this.handleUserSubmit = this.handleUserSubmit.bind(this);
     this.onDelete = this.onDelete.bind(this);
   }
 
-  handleChange(ev) {
+  handleUserChange(ev) {
     const { name, value } = ev.target;
 
+    this.setState(prevState => ({
+      userData: {
+        ...prevState.userData,
+        [name]: value
+      }
+    }));
+  }
+  handlePlacesChange(ev) {
+    const { name, value } = ev.target;
+    if (name === "visited") {
+      this.setState(prevState => ({
+        formData: {
+          ...prevState.formData,
+          [name]: !!value
+        }
+      }));
+      console.log("special case for checkbox");
+    }
+    console.log(name, value);
     this.setState(prevState => ({
       formData: {
         ...prevState.formData,
@@ -36,73 +63,106 @@ class App extends Component {
       }
     }));
   }
-
+  handleCheckBox(e) {
+    console.log(e.target);
+  }
   async savePlace(place) {
     try {
       const resp = await axios.post(`${BASE_URL}/places`, place);
       this.setState(prevState => ({
-        places: [
-          ...prevState.places,
-          resp.data
-        ]
+        places: [...prevState.places, resp.data]
       }));
-    } catch(e) {
+    } catch (e) {
       console.log(e);
     } finally {
       this.setState({
         formData: {
-          name: '',
-          description: '',
+          name: "",
+          description: "",
           visited: true,
-          address: ''
+          address: ""
         }
       });
     }
   }
 
-  handleSubmit(ev) {
+  handlePlacesSubmit(ev) {
     ev.preventDefault();
     this.savePlace(this.state.formData);
   }
 
+  async saveUser(user) {
+    try {
+      const resp = await axios.post(`${BASE_URL}/users`, user);
+      this.setState(prevState => ({
+        users: [...prevState.users, resp.data]
+      }));
+    } catch (e) {
+      console.log(e);
+    } finally {
+      this.setState({
+        userData: {
+          name: "",
+          description: ""
+        }
+      });
+    }
+  }
+
+  handleUserSubmit(ev) {
+    ev.preventDefault();
+    this.saveUser(this.state.userData);
+  }
+
+  // onAxiosCall function(delete, (`${BASE_URL}/places/${id}`))
+  // add loading component
+  //const resp = await axios.delete(`${BASE_URL}/places/${id}`);
+  //remove the loading componet
+
   async onDelete(id) {
     try {
-      const resp = await axios.delete(`${BASE_URL}/places/${id}`);
+      // onAxiosCall
+      await axios.delete(`${BASE_URL}/places/${id}`);
       this.setState(prevState => ({
         places: prevState.places.filter(place => place.id !== id)
       }));
-    } catch(e) {
-      console.log('oopsie: ', e.message);
+    } catch (e) {
+      console.log("oopsie: ", e.message);
     }
-
   }
 
   async fetchPlaces() {
     const resp = await axios.get(`${BASE_URL}/places`);
-    this.setState({ places: resp.data })
+    this.setState({ places: resp.data });
     return resp.data;
   }
 
   async componentDidMount() {
-    const places = await this.fetchPlaces();
+    await this.fetchPlaces();
   }
 
   render() {
     const { name, description, visited, address } = this.state.formData;
+    const { username, password } = this.state.userData;
     return (
       <div className="App">
         <main>
-          <PlacesList
-            onDelete={this.onDelete}
-            places={this.state.places} />
+          <PlacesList onDelete={this.onDelete} places={this.state.places} />
           <PlacesForm
             name={name}
             description={description}
             visited={visited}
             address={address}
-            onChange={this.handleChange}
-            onSubmit={this.handleSubmit} />
-
+            onCheckBox={this.handleCheckBox}
+            onChange={this.handlePlacesChange}
+            onSubmit={this.handlePlacesSubmit}
+          />
+          <UserForm
+            username={username}
+            password={password}
+            onChange={this.handleUserChange}
+            onSubmit={this.handleUserSubmit}
+          />
         </main>
       </div>
     );
