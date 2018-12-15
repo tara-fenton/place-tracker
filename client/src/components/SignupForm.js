@@ -4,9 +4,10 @@ import UserForm from './UserForm';
 export default (props) => {
   return (
     <div>
+      <h2>Signup</h2>
       <UserForm
-        onChange={props.handleUserChange}
-        onSubmit={props.handleUserSubmit}
+        onChange={props.onChange}
+        onSubmit={props.onSubmit}
       />
     </div>
   )

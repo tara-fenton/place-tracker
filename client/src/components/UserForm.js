@@ -3,7 +3,6 @@ import React from 'react';
 export default (props) => {
   return (
     <div>
-      <h2>User Form</h2>
       <form onSubmit={props.onSubmit}>
         <label htmlFor="username">Username</label>
         <input
