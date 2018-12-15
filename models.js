@@ -16,7 +16,13 @@ const Place = sequelize.define('places', {
   address: Sequelize.STRING
 });
 
+const User = sequelize.define('users', {
+  username: Sequelize.STRING,
+  password: Sequelize.STRING
+});
+
 module.exports = {
   sequelize,
-  Place
+  Place,
+  User
 }

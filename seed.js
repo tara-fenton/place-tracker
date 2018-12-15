@@ -21,6 +21,16 @@ async function seed() {
       address: 'New Orleans',
     },
   ]);
+  const users = await User.bulkCreate([
+    {
+      username: 'tara',
+      password: 'tara',
+    },
+    {
+      username: 'john',
+      password: 'john',
+    }
+  ]);
   process.exit()
 }
 
