@@ -34,11 +34,11 @@ async function createUsers() {
     const user = await User.bulkCreate([
       {
         username: 'tara',
-        password: 'tara',
+        password: '$2b$10$0lkrNprHh4QHd7ZZO6xZpuPlwayXi6ECXAKBUMCvCqGUVg6Fyilha',
       },
       {
         username: 'john',
-        password: 'john',
+        password: '$2b$10$WiGnNcZ5QtR3xoD0erNjwuLZPbAlLky4O7v1pNl2FK3hla8RtPQHe',
       }
     ]);
   } catch(e) {
