@@ -2,7 +2,8 @@ import React, { Component } from "react";
 import axios from "axios";
 import PlacesList from "./components/PlacesList";
 import PlacesForm from "./components/PlacesForm";
-import UserForm from "./components/UserForm";
+import LoginForm from "./components/LoginForm";
+import SignupForm from "./components/SignupForm";
 
 import "./App.css";
 
@@ -13,7 +14,10 @@ class App extends Component {
     super(props);
 
     this.state = {
-      view: 'signup',
+      view: "login",
+      currentUser: null,
+      token: "",
+      loggedIn: false,
       places: [],
       formData: {
         name: "",
@@ -28,35 +32,17 @@ class App extends Component {
       }
     };
 
-    this.handlePlacesChange = this.handlePlacesChange.bind(this);
-    this.handlePlacesSubmit = this.handlePlacesSubmit.bind(this);
-    this.handleUserChange = this.handleUserChange.bind(this);
-    this.handleUserSubmit = this.handleUserSubmit.bind(this);
+    this.onPlacesChange = this.onPlacesChange.bind(this);
+    this.onPlacesSubmit = this.onPlacesSubmit.bind(this);
+    this.onLoginSubmit = this.onLoginSubmit.bind(this);
+    this.onSignupSubmit = this.onSignupSubmit.bind(this);
+    this.onChange = this.onChange.bind(this);
     this.onDelete = this.onDelete.bind(this);
   }
 
-  handleUserChange(ev) {
+  onPlacesChange(ev) {
     const { name, value } = ev.target;
 
-    this.setState(prevState => ({
-      userData: {
-        ...prevState.userData,
-        [name]: value
-      }
-    }));
-  }
-  handlePlacesChange(ev) {
-    const { name, value } = ev.target;
-    if (name === "visited") {
-      this.setState(prevState => ({
-        formData: {
-          ...prevState.formData,
-          [name]: !!value
-        }
-      }));
-      console.log("special case for checkbox");
-    }
-    console.log(name, value);
     this.setState(prevState => ({
       formData: {
         ...prevState.formData,
@@ -64,9 +50,7 @@ class App extends Component {
       }
     }));
   }
-  handleCheckBox(e) {
-    console.log(e.target);
-  }
+
   async savePlace(place) {
     try {
       const resp = await axios.post(`${BASE_URL}/places`, place);
@@ -87,9 +71,20 @@ class App extends Component {
     }
   }
 
-  handlePlacesSubmit(ev) {
+  onPlacesSubmit(ev) {
     ev.preventDefault();
     this.savePlace(this.state.formData);
+  }
+
+  onChange(ev) {
+    const { name, value } = ev.target;
+
+    this.setState(prevState => ({
+      userData: {
+        ...prevState.userData,
+        [name]: value
+      }
+    }));
   }
 
   async saveUser(user) {
@@ -103,26 +98,58 @@ class App extends Component {
     } finally {
       this.setState({
         userData: {
-          name: "",
-          description: ""
+          username: "",
+          password: ""
         }
       });
     }
   }
 
-  handleUserSubmit(ev) {
+  onSignupSubmit(ev) {
     ev.preventDefault();
     this.saveUser(this.state.userData);
   }
 
-  // onAxiosCall function(delete, (`${BASE_URL}/places/${id}`))
-  // add loading component
-  //const resp = await axios.delete(`${BASE_URL}/places/${id}`);
-  //remove the loading componet
-
+  buildHeaders() {
+    const { token } = this.state;
+    return {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    };
+  }
+  async getCurrentUser() {
+    try {
+      const headers = this.buildHeaders();
+      const resp = await axios.get(`${BASE_URL}/currentuser`, {...headers});
+      console.log(resp.data);
+      console.log(resp.data.user);
+      // this.fetchSodas();
+      this.setState({
+        loggedIn: true,
+        currentUser: resp.data.user
+      });
+    } catch(e) {
+      console.log(e);
+    }
+  }
+  validateLogin() {
+    const { username, password } = this.state.userData;
+    console.log(username, password);
+    axios.post(`${BASE_URL}/users/login`, { username, password }).then(resp =>
+      this.setState({
+        token: resp.data.token,
+        loggedIn: true,
+        view: "places"
+      })
+    );
+  }
+  onLoginSubmit(ev) {
+    ev.preventDefault();
+    this.validateLogin();
+  }
   async onDelete(id) {
     try {
-      // onAxiosCall
       await axios.delete(`${BASE_URL}/places/${id}`);
       this.setState(prevState => ({
         places: prevState.places.filter(place => place.id !== id)
@@ -151,18 +178,27 @@ class App extends Component {
     const { name, description, visited, address } = this.state.formData;
     const { username, password } = this.state.userData;
     switch (this.state.view) {
-      case 'login':
-      case 'signup':
+      case "login":
         return (
-          <UserForm
+          <LoginForm
             setView={this.setView}
             username={username}
             password={password}
-            onChange={this.handleUserChange}
-            onSubmit={this.handleUserSubmit}
+            onChange={this.onChange}
+            onSubmit={this.onLoginSubmit}
           />
         );
-      case 'addPlaces':
+      case "signup":
+        return (
+          <SignupForm
+            setView={this.setView}
+            username={username}
+            password={password}
+            onChange={this.onChange}
+            onSubmit={this.onSignupSubmit}
+          />
+        );
+      case "addPlaces":
         return (
           <PlacesForm
             setView={this.setView}
@@ -171,11 +207,11 @@ class App extends Component {
             visited={visited}
             address={address}
             onCheckBox={this.handleCheckBox}
-            onChange={this.handlePlacesChange}
-            onSubmit={this.handlePlacesSubmit}
+            onChange={this.onPlacesChange}
+            onSubmit={this.onPlacesSubmit}
           />
-        )
-      case 'places':
+        );
+      case "places":
         return (
           <PlacesList
             setView={this.setView}
@@ -189,9 +225,7 @@ class App extends Component {
   render() {
     return (
       <main>
-        <div className="App">
-          {this.getView()}
-          </div>
+        <div className="App">{this.getView()}</div>
       </main>
     );
   }
