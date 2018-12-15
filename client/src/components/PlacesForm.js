@@ -19,15 +19,13 @@ export default (props) => {
           value={props.description}
           id="description"
           name="description" />
-
         <label htmlFor="visited">Visited</label>
         <input
           type="checkbox"
-          onChange={props.onChange}
+          onChange={props.onCheckBox}
           value={props.visited}
           id="visited"
           name="visited" />
-
         <label htmlFor="name">Address</label>
         <input
           type="text"
@@ -35,7 +33,6 @@ export default (props) => {
           value={props.address}
           id="address"
           name="address" />
-
         <input
           type="submit"
           value="Save Place" />
